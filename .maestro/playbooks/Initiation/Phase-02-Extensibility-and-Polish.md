@@ -4,13 +4,13 @@ Enhance the prototype with reusable components, configuration options, and produ
 
 ## Tasks
 
-- [ ] Refactor app.js into modular structure:
-  - Search existing code for extractable utilities before creating new modules
-  - slider-engine.js: core gesture recognition and multi-touch handling
-  - slider-values.js: SliderValue class for int/float/iterable/bool bindings
-  - slider-render.js: DOM manipulation and visual updates
-  - main.js: initialization and wiring
-  - Keep all logic in /Users/e6d64/Documents/GitHub/efa403/combo/src/ folder
+- [x] Refactor app.js into modular structure:
+   - Search existing code for extractable utilities before creating new modules
+   - slider-engine.js: core gesture recognition and multi-touch handling
+   - slider-values.js: SliderValue class for int/float/iterable/bool bindings
+   - slider-render.js: DOM manipulation and visual updates
+   - main.js: initialization and wiring
+   - Keep all logic in /Users/e6d64/Documents/GitHub/efa403/combo/src/ folder
 
 - [ ] Create programmatic binding API:
   - Sliders.bind(channelIndex, valueOrBindingFn, options) method
