@@ -65,7 +65,8 @@ Set up a minimal but fully functional prototype with plain HTML/JS/CSS. By the e
       - Added proper bool visual feedback (bool-true/bool-false classes)
       - Added initial channel display update on load
 
-- [ ] Make initial commit of working prototype:
-   - Add all files (index.html, styles.css, app.js)
-   - Commit with message `+ working multi-touch slider prototype with 2 rows x 4 channels`
-   - Include brief notes in commit body listing supported bindings and interactions
+- [x] Make initial commit of working prototype:
+    - Add all files (index.html, styles.css, app.js)
+    - Commit with message `+ working multi-touch slider prototype with 2 rows x 4 channels`
+    - Include brief notes in commit body listing supported bindings and interactions
+    - **Note:** No remote repository configured; commit saved locally only
