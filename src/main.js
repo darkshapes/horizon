@@ -1,13 +1,18 @@
 import { SliderValue } from './slider-values.js';
 import { detectChannelFromPoint, calculateDeltaY, clampToRange } from './slider-engine.js';
 import { updateChannelIndicator, updateChannelDisplay, updateBoolVisuals, setActiveState } from './slider-render.js';
+import { SliderBindings } from './slider-bindings.js';
+import { setupKeyboardAccessibility as setupKeyboard } from './slider-keyboard.js';
 
 class MultiTouchSlider {
     constructor() {
         this.channels = new Map();
         this.activeTouches = new Map();
+        this.SliderValue = SliderValue;
         this.initChannels();
         this.setupEventListeners();
+        this.setupKeyboardAccessibility();
+        this.bindings = new SliderBindings(this);
     }
     
     initChannels() {
@@ -39,9 +44,40 @@ class MultiTouchSlider {
                 channelObj.element.classList.add('bool-false');
             }
             
+            this.initARIA(channelObj, channelIndex);
             this.channels.set(key, channelObj);
             this.updateChannelDisplay(channelObj);
         });
+    }
+    
+    initARIA(channelObj, channelIndex) {
+        const el = channelObj.element;
+        const type = channelObj.value.type;
+        
+        el.setAttribute('role', 'slider');
+        el.setAttribute('tabindex', '-1');
+        el.setAttribute('aria-hidden', 'true');
+        
+        if (type === 'bool') {
+            el.setAttribute('aria-checked', 'false');
+            el.setAttribute('aria-valuenow', '0');
+            el.setAttribute('aria-valuemin', '0');
+            el.setAttribute('aria-valuemax', '1');
+        } else if (type === 'int') {
+            el.setAttribute('aria-valuenow', '0');
+            el.setAttribute('aria-valuemin', String(channelObj.value.min));
+            el.setAttribute('aria-valuemax', String(channelObj.value.max));
+        } else if (type === 'float') {
+            el.setAttribute('aria-valuenow', '0.0');
+            el.setAttribute('aria-valuemin', String(channelObj.value.min));
+            el.setAttribute('aria-valuemax', String(channelObj.value.max));
+        } else if (type === 'iterable') {
+            el.setAttribute('aria-valuenow', '1');
+            el.setAttribute('aria-valuemin', '1');
+            el.setAttribute('aria-valuemax', String(channelObj.value.items.length));
+        }
+        
+        el.setAttribute('aria-label', `Channel ${channelIndex + 1}, type ${type}`);
     }
     
     setupEventListeners() {
@@ -171,10 +207,54 @@ class MultiTouchSlider {
             channelObj.display.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.5)';
         }
     }
+    
+    setupKeyboardAccessibility() {
+        setupKeyboard(this);
+    }
 }
 
+let _sliderInstance = null;
+
 document.addEventListener('DOMContentLoaded', () => {
-    new MultiTouchSlider();
+    _sliderInstance = new MultiTouchSlider();
 });
 
-export { MultiTouchSlider };
+const Sliders = {
+    bind(arrayId, channelIndex, valueOrBindingFn, options = {}) {
+        if (!_sliderInstance) {
+            console.error('Sliders API: Instance not initialized yet');
+            return null;
+        }
+        return _sliderInstance.bindings.bind(arrayId, channelIndex, valueOrBindingFn, options);
+    },
+    
+    get(arrayId, channelIndex) {
+        if (!_sliderInstance) {
+            return undefined;
+        }
+        return _sliderInstance.bindings.get(arrayId, channelIndex);
+    },
+    
+    unbind(arrayId, channelIndex) {
+        if (!_sliderInstance) {
+            return false;
+        }
+        return _sliderInstance.bindings.unbind(arrayId, channelIndex);
+    },
+    
+    clear() {
+        if (!_sliderInstance) {
+            return;
+        }
+        _sliderInstance.bindings.clear();
+    },
+    
+    getAll() {
+        if (!_sliderInstance) {
+            return {};
+        }
+        return _sliderInstance.bindings.getAll();
+    }
+};
+
+export { MultiTouchSlider, Sliders };

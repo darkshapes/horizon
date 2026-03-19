@@ -12,19 +12,22 @@ Enhance the prototype with reusable components, configuration options, and produ
    - main.js: initialization and wiring
    - Keep all logic in /Users/e6d64/Documents/GitHub/efa403/combo/src/ folder
 
-- [ ] Create programmatic binding API:
-  - Sliders.bind(channelIndex, valueOrBindingFn, options) method
-  - Options: { type, min, max, precision, labels, on change }
-  - Support lazy evaluation with functions: () => getState()
-  - Support push callbacks: onChange(newValue) for reactive updates
-  - Document API structure in code comments (not separate docs yet)
+- [x] Create programmatic binding API:
+   - Sliders.bind(channelIndex, valueOrBindingFn, options) method
+   - Options: { type, min, max, precision, labels, on change }
+   - Support lazy evaluation with functions: () => getState()
+   - Support push callbacks: onChange(newValue) for reactive updates
+   - Document API structure in code comments (not separate docs yet)
 
-- [ ] Add keyboard accessibility:
-  - Arrow keys up/down increment/decrement active channel
-  - Home/End keys jump to min/max
-  - Number keys (0-9) jump to percentage positions
-  - Tab navigation between slider arrays
-  - ARIA labels for screen readers (role="slider", aria-valuenow, etc.)
+- [x] Add keyboard accessibility:
+   - Arrow keys up/down increment/decrement active channel
+   - Home/End keys jump to min/max
+   - Number keys (0-9) jump to percentage positions
+   - Tab navigation between slider arrays
+   - ARIA labels for screen readers (role="slider", aria-valuenow, etc.)
+   - Created src/slider-keyboard.js module with KEYBOARD_CONFIG
+   - Integrated with main.js via setupKeyboardAccessibility()
+   - Added initARIA() method to initialize ARIA attributes on channel creation
 
 - [ ] Add mouse wheel support as alternative input:
   - Wheel over channel region adjusts that channel
