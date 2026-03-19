@@ -76,11 +76,16 @@ Enhance the prototype with reusable components, configuration options, and produ
    - Light theme variant with adjusted colors
    - Respects prefers-color-scheme media query
 
-- [ ] Add configuration export/import:
-  - Export current slider values state as JSON
-  - Import JSON to restore configuration
-  - Support preset names saved to localStorage
-  - Optional: drag-drop .json file to load
+- [x] Add configuration export/import:
+   - Export current slider values state as JSON: Sliders.export() and Sliders.exportAsJSON()
+   - Import JSON to restore configuration: Sliders.import() with validation
+   - Support preset names saved to localStorage: Sliders.savePreset() and Sliders.loadPreset()
+   - List/delete presets: Sliders.listPresets() and Sliders.deletePreset()
+   - Download export as file: Sliders.download(filename)
+   - Optional: import from file input: Sliders.importFromFile(fileInput)
+   - Created src/slider-io.js module with SliderIO class
+   - Integrated with main.js via setupSliderIO()
+   - Added Io methods toSliders API: export, exportAsJSON, import, importFromFile, savePreset, loadPreset, listPresets, deletePreset, download
 
 - [ ] Write unit tests for core logic:
   - Create /Users/e6d64/Documents/GitHub/efa403/combo/tests/ folder

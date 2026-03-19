@@ -6,12 +6,14 @@ import { setupKeyboardAccessibility as setupKeyboard } from './slider-keyboard.j
 import { setupWheelAccessibility as setupWheel } from './slider-wheel.js';
 import { setupUndoRedo } from './slider-undo.js';
 import { setupResetFunctionality } from './slider-reset.js';
+import { setupSliderIO } from './slider-io.js';
 
 class MultiTouchSlider {
     constructor() {
         this.channels = new Map();
         this.activeTouches = new Map();
         this.SliderValue = SliderValue;
+        this.io = setupSliderIO(this);
         this.initTheme();
         this.initChannels();
         this.setupEventListeners();
@@ -338,6 +340,69 @@ const Sliders = {
             return {};
         }
         return _sliderInstance.bindings.getAll();
+    },
+    
+    export(presetName) {
+        if (!_sliderInstance) {
+            return null;
+        }
+        return _sliderInstance/io.export(presetName);
+    },
+    
+    exportAsJSON(presetName, spaces) {
+        if (!_sliderInstance) {
+            return null;
+        }
+        return _sliderInstance.io.exportAsJSON(presetName, spaces);
+    },
+    
+    import(data) {
+        if (!_sliderInstance) {
+            return { success: false, error: 'Instance not initialized' };
+        }
+        return _sliderInstance.io.import(data);
+    },
+    
+    importFromFile(fileInput) {
+        if (!_sliderInstance) {
+            return Promise.resolve({ success: false, error: 'Instance not initialized' });
+        }
+        return _sliderInstance.io.importFromFile(fileInput);
+    },
+    
+    savePreset(name) {
+        if (!_sliderInstance) {
+            return false;
+        }
+        return _sliderInstance.io.savePreset(name);
+    },
+    
+    loadPreset(name) {
+        if (!_sliderInstance) {
+            return { success: false, error: 'Instance not initialized' };
+        }
+        return _sliderInstance.io.loadPreset(name);
+    },
+    
+    listPresets() {
+        if (!_sliderInstance) {
+            return [];
+        }
+        return _sliderInstance.io.listPresets();
+    },
+    
+    deletePreset(name) {
+        if (!_sliderInstance) {
+            return false;
+        }
+        return _sliderInstance.io.deletePreset(name);
+    },
+    
+    download(filename) {
+        if (!_sliderInstance) {
+            return;
+        }
+        _sliderInstance.io.download(filename);
     }
 };
 
