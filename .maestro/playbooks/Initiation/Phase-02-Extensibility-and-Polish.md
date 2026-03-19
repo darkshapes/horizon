@@ -29,11 +29,14 @@ Enhance the prototype with reusable components, configuration options, and produ
    - Integrated with main.js via setupKeyboardAccessibility()
    - Added initARIA() method to initialize ARIA attributes on channel creation
 
-- [ ] Add mouse wheel support as alternative input:
-  - Wheel over channel region adjusts that channel
-  - Ctrl+wheel for fine-tuning (10x precision)
-  - Wheel delta clamping to prevent overshoot
-  - Visual feedback on hover and wheel activity
+- [x] Add mouse wheel support as alternative input:
+   - Wheel over channel region adjusts that channel
+   - Ctrl+wheel for fine-tuning (10x precision)
+   - Wheel delta clamping to prevent overshoot
+   - Visual feedback on hover and wheel activity
+   - Created src/slider-wheel.js module with WHEEL_CONFIG
+   - Integrated with main.js via setupWheelAccessibility()
+   - Added CSS styles for .wheel-hover and .wheel-active states
 
 - [ ] Implement undo/redo for value changes:
   - History buffer per channel (last 50 changes)

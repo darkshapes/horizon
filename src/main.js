@@ -3,6 +3,7 @@ import { detectChannelFromPoint, calculateDeltaY, clampToRange } from './slider-
 import { updateChannelIndicator, updateChannelDisplay, updateBoolVisuals, setActiveState } from './slider-render.js';
 import { SliderBindings } from './slider-bindings.js';
 import { setupKeyboardAccessibility as setupKeyboard } from './slider-keyboard.js';
+import { setupWheelAccessibility as setupWheel } from './slider-wheel.js';
 
 class MultiTouchSlider {
     constructor() {
@@ -12,6 +13,7 @@ class MultiTouchSlider {
         this.initChannels();
         this.setupEventListeners();
         this.setupKeyboardAccessibility();
+        this.setupWheelAccessibility();
         this.bindings = new SliderBindings(this);
     }
     
@@ -210,6 +212,10 @@ class MultiTouchSlider {
     
     setupKeyboardAccessibility() {
         setupKeyboard(this);
+    }
+    
+    setupWheelAccessibility() {
+        setupWheel(this);
     }
 }
 
