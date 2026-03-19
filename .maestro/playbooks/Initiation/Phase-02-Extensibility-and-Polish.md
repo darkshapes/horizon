@@ -38,11 +38,19 @@ Enhance the prototype with reusable components, configuration options, and produ
    - Integrated with main.js via setupWheelAccessibility()
    - Added CSS styles for .wheel-hover and .wheel-active states
 
-- [ ] Implement undo/redo for value changes:
-  - History buffer per channel (last 50 changes)
-  - Undo/redo via keyboard (Cmd+Z / Cmd+Shift+Z)
-  - Visual indicator when undo is available
-  - Clear history on manual reset or binding swap
+- [x] Implement undo/redo for value changes:
+   - History buffer per channel (last 50 changes)
+   - Undo/redo via keyboard (Cmd+Z / Cmd+Shift+Z)
+   - Visual indicator when undo is available
+   - Clear history on manual reset or binding swap
+   - Created src/slider-undo.js with UndoManager class
+   - UNDO_CONFIG: maxHistory=50, undo/redo shortcuts
+   - Per-channel history and redoStack Maps
+   - push/undo/redo/canUndo/canRedo/clear methods
+   - Integrated saveHistoryEntry(), undoLastChange(), redoLastChange() into MultiTouchSlider
+   - Visual indicators: can-undo (blue dot), can-redo (green dot) CSS classes
+   - History saved on touch/pointer, keyboard, and wheel input
+   - Redo stack cleared on new changes (standard undo/redo behavior)
 
 - [ ] Add value reset functionality:
   - Double-tap or double-click channel to reset to center (zero or middle index)

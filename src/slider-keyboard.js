@@ -137,6 +137,9 @@ function setupKeyboardAccessibility(sliderInstance) {
             channelObj.value.setFromPercentage(newPct);
             sliderInstance.updateChannelDisplay(channelObj);
             updateARIA(channelObj, newPct);
+            if (sliderInstance.saveHistoryEntry) {
+                sliderInstance.saveHistoryEntry(channelObj);
+            }
         }
     }
     

@@ -69,6 +69,9 @@ function handleWheel(e, sliderInstance) {
     if (newPct !== currentPct) {
         channel.value.setFromPercentage(newPct);
         sliderInstance.updateChannelDisplay(channel);
+        if (sliderInstance.saveHistoryEntry) {
+            sliderInstance.saveHistoryEntry(channel);
+        }
         
         channelEl.classList.add(WHEEL_CONFIG.activityClass);
         clearTimeout(channelEl._wheelTimeout);

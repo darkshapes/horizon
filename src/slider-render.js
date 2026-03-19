@@ -27,4 +27,20 @@ function setActiveState(channelObj, isActive) {
     }
 }
 
-export { updateChannelIndicator, updateChannelDisplay, updateBoolVisuals, setActiveState };
+function updateUndoRedoIndicator(channelObj, canUndo, canRedo) {
+    const element = channelObj.element;
+    
+    if (canUndo) {
+        element.classList.add('can-undo');
+    } else {
+        element.classList.remove('can-undo');
+    }
+    
+    if (canRedo) {
+        element.classList.add('can-redo');
+    } else {
+        element.classList.remove('can-redo');
+    }
+}
+
+export { updateChannelIndicator, updateChannelDisplay, updateBoolVisuals, setActiveState, updateUndoRedoIndicator };

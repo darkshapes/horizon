@@ -1,9 +1,10 @@
 import { SliderValue } from './slider-values.js';
 import { detectChannelFromPoint, calculateDeltaY, clampToRange } from './slider-engine.js';
-import { updateChannelIndicator, updateChannelDisplay, updateBoolVisuals, setActiveState } from './slider-render.js';
+import { updateChannelIndicator, updateChannelDisplay, updateBoolVisuals, setActiveState, updateUndoRedoIndicator } from './slider-render.js';
 import { SliderBindings } from './slider-bindings.js';
 import { setupKeyboardAccessibility as setupKeyboard } from './slider-keyboard.js';
 import { setupWheelAccessibility as setupWheel } from './slider-wheel.js';
+import { setupUndoRedo } from './slider-undo.js';
 
 class MultiTouchSlider {
     constructor() {
@@ -14,6 +15,7 @@ class MultiTouchSlider {
         this.setupEventListeners();
         this.setupKeyboardAccessibility();
         this.setupWheelAccessibility();
+        this.setupUndoRedo();
         this.bindings = new SliderBindings(this);
     }
     
@@ -110,10 +112,12 @@ class MultiTouchSlider {
             if (!channel) return;
             
             setActiveState(channel, true);
+            const currentRaw = channel.value.getRawPercentage();
             this.activeTouches.set(touch.identifier, {
                 key,
                 startY: touch.clientY,
-                startRaw: channel.value.getRawPercentage()
+                startRaw: currentRaw,
+                savedValue: currentRaw
             });
         });
     }
@@ -143,6 +147,10 @@ class MultiTouchSlider {
             
             const channel = this.channels.get(touchData.key);
             if (channel) {
+                const newValue = channel.value.getRawPercentage();
+                if (newValue !== touchData.savedValue && this.saveHistoryEntry) {
+                    this.saveHistoryEntry(channel);
+                }
                 setActiveState(channel, false);
             }
             this.activeTouches.delete(touch.identifier);
@@ -162,10 +170,12 @@ class MultiTouchSlider {
         
         setActiveState(channel, true);
         channel.element.setPointerCapture(e.pointerId);
+        const currentRaw = channel.value.getRawPercentage();
         this.activeTouches.set(e.pointerId, {
             key,
             startY: e.clientY,
-            startRaw: channel.value.getRawPercentage(),
+            startRaw: currentRaw,
+            savedValue: currentRaw,
             element: channel.element
         });
     }
@@ -188,6 +198,14 @@ class MultiTouchSlider {
         const touchData = this.activeTouches.get(e.pointerId);
         if (!touchData) return;
         
+        const channel = this.channels.get(touchData.key);
+        if (channel) {
+            const newValue = channel.value.getRawPercentage();
+            if (newValue !== touchData.savedValue && this.saveHistoryEntry) {
+                this.saveHistoryEntry(channel);
+            }
+        }
+        
         const element = touchData.element;
         if (element) {
             element.classList.remove('active');
@@ -208,6 +226,16 @@ class MultiTouchSlider {
             channelObj.display.style.color = 'var(--text-color)';
             channelObj.display.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.5)';
         }
+
+        if (this.updateUndoRedoIndicator) {
+            const key = Array.from(this.channels.entries())
+                .find(([, c]) => c === channelObj)?.[0];
+            if (key && this.undoManager) {
+                const canUndo = this.undoManager.canUndo(key);
+                const canRedo = this.undoManager.canRedo(key);
+                updateUndoRedoIndicator(channelObj, canUndo, canRedo);
+            }
+        }
     }
     
     setupKeyboardAccessibility() {
@@ -216,6 +244,10 @@ class MultiTouchSlider {
     
     setupWheelAccessibility() {
         setupWheel(this);
+    }
+
+    setupUndoRedo() {
+        setupUndoRedo(this);
     }
 }
 
