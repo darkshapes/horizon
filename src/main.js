@@ -12,6 +12,7 @@ class MultiTouchSlider {
         this.channels = new Map();
         this.activeTouches = new Map();
         this.SliderValue = SliderValue;
+        this.initTheme();
         this.initChannels();
         this.setupEventListeners();
         this.setupKeyboardAccessibility();
@@ -19,6 +20,25 @@ class MultiTouchSlider {
         this.setupUndoRedo();
         this.setupResetFunctionality();
         this.bindings = new SliderBindings(this);
+    }
+    
+    initTheme() {
+        const savedTheme = localStorage.getItem('slider-theme');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        const theme = savedTheme || (prefersLight ? 'light' : 'dark');
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('slider-theme', newTheme);
+                themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
+            });
+        }
     }
     
     initChannels() {
@@ -51,6 +71,7 @@ class MultiTouchSlider {
             }
             
             this.initARIA(channelObj, channelIndex);
+            channelObj.valueOverlay = el.querySelector('.channel-value-overlay');
             this.channels.set(key, channelObj);
             this.updateChannelDisplay(channelObj);
         });
@@ -211,6 +232,7 @@ class MultiTouchSlider {
         const element = touchData.element;
         if (element) {
             element.classList.remove('active');
+            element.style.removeProperty('--glow-intensity');
             element.releasePointerCapture(e.pointerId);
         }
         this.activeTouches.delete(e.pointerId);
@@ -221,10 +243,20 @@ class MultiTouchSlider {
         updateChannelIndicator(channelObj, pct);
         updateChannelDisplay(channelObj, channelObj.value.getDisplay());
         
+        if (channelObj.valueOverlay) {
+            channelObj.valueOverlay.textContent = channelObj.value.getDisplay();
+            const indicatorRect = channelObj.indicator.getBoundingClientRect();
+            const channelRect = channelObj.element.getBoundingClientRect();
+            const overlayTop = (indicatorRect.top - channelRect.top) - 12;
+            channelObj.valueOverlay.style.top = `${overlayTop}px`;
+        }
+        
         if (channelObj.value.type === 'bool') {
             const isTrue = pct > 0.5;
             updateBoolVisuals(channelObj, isTrue);
         } else {
+            const glowIntensity = Math.min(1, Math.abs(pct - 0.5) * 2);
+            channelObj.element.style.setProperty('--glow-intensity', glowIntensity);
             channelObj.display.style.color = 'var(--text-color)';
             channelObj.display.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.5)';
         }
@@ -241,7 +273,15 @@ class MultiTouchSlider {
     }
     
     setupKeyboardAccessibility() {
-        setupKeyboard(this);
+        setupKeyboard(this, () => {
+            this.clearGlowEffects();
+        });
+    }
+    
+    clearGlowEffects() {
+        this.channels.forEach(channel => {
+            channel.element.style.removeProperty('--glow-intensity');
+        });
     }
     
     setupWheelAccessibility() {

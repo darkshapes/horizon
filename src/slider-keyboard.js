@@ -4,7 +4,7 @@ const KEYBOARD_CONFIG = {
     percentageSteps: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 };
 
-function setupKeyboardAccessibility(sliderInstance) {
+function setupKeyboardAccessibility(sliderInstance, onGlowClear) {
     let activeArrayIndex = 0;
     let activeChannelIndex = 0;
     
@@ -150,6 +150,10 @@ function setupKeyboardAccessibility(sliderInstance) {
         
         const channels = Array.from(currentArray.querySelectorAll('.channel'));
         const channelCount = channels.length;
+        
+        if (onGlowClear) {
+            onGlowClear();
+        }
         
         if (e.shiftKey) {
             if (activeChannelIndex > 0) {

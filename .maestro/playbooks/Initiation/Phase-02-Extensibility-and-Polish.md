@@ -62,12 +62,19 @@ Enhance the prototype with reusable components, configuration options, and produ
    - Added resetPulse animation in styles.css with keyframes
    - Integrated in main.js via setupResetFunctionality()
 
-- [ ] Enhance visual polish:
-  - Add subtle glow effect on active channels
-  - Smooth gradient transitions between color states (intensity-based)
-  - Optional value overlay showing exact numeric/string value on drag
-  - Responsive font sizing for labels
-  - Consider dark/light theme toggle (stored in localStorage)
+- [x] Enhance visual polish:
+   - Add subtle glow effect on active channels
+   - Smooth gradient transitions between color states (intensity-based)
+   - Optional value overlay showing exact numeric/string value on drag
+   - Responsive font sizing for labels
+   - Consider dark/light theme toggle (stored in localStorage)
+   - Glow intensity scales with value position (stronger at extremes)
+   - Value overlay appears on drag with dynamic positioning
+   - Theme toggle saved in localStorage with icon (🌙/☀️)
+   - Added CSS transition properties for smooth state changes
+   - Uses clamp() for responsive fonts (11px to 14px, 2vw responsive)
+   - Light theme variant with adjusted colors
+   - Respects prefers-color-scheme media query
 
 - [ ] Add configuration export/import:
   - Export current slider values state as JSON
