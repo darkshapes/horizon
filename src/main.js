@@ -5,6 +5,7 @@ import { SliderBindings } from './slider-bindings.js';
 import { setupKeyboardAccessibility as setupKeyboard } from './slider-keyboard.js';
 import { setupWheelAccessibility as setupWheel } from './slider-wheel.js';
 import { setupUndoRedo } from './slider-undo.js';
+import { setupResetFunctionality } from './slider-reset.js';
 
 class MultiTouchSlider {
     constructor() {
@@ -16,6 +17,7 @@ class MultiTouchSlider {
         this.setupKeyboardAccessibility();
         this.setupWheelAccessibility();
         this.setupUndoRedo();
+        this.setupResetFunctionality();
         this.bindings = new SliderBindings(this);
     }
     
@@ -248,6 +250,10 @@ class MultiTouchSlider {
 
     setupUndoRedo() {
         setupUndoRedo(this);
+    }
+    
+    setupResetFunctionality() {
+        setupResetFunctionality(this);
     }
 }
 

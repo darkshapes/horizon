@@ -52,10 +52,15 @@ Enhance the prototype with reusable components, configuration options, and produ
    - History saved on touch/pointer, keyboard, and wheel input
    - Redo stack cleared on new changes (standard undo/redo behavior)
 
-- [ ] Add value reset functionality:
-  - Double-tap or double-click channel to reset to center (zero or middle index)
-  - Configurable reset behavior (center vs min vs last known)
-  - Visual feedback on reset (brief animation)
+- [x] Add value reset functionality:
+   - Double-tap or double-click channel to reset to center (zero or middle index)
+   - Configurable reset behavior (center vs min vs last known)
+   - Visual feedback on reset (brief animation)
+   - Created src/slider-reset.js with RESET_CONFIG and setupResetFunctionality()
+   - Support for double-tap on touch devices and double-click on mouse
+   - Clear undo history on reset to prevent restoring reset values
+   - Added resetPulse animation in styles.css with keyframes
+   - Integrated in main.js via setupResetFunctionality()
 
 - [ ] Enhance visual polish:
   - Add subtle glow effect on active channels

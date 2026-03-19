@@ -144,6 +144,22 @@ main {
     border-radius: 50%;
 }
 
+.channel.reset-animation {
+    animation: resetPulse 0.2s ease-out;
+}
+
+@keyframes resetPulse {
+    0% {
+        box-shadow: inset 0 0 0 rgba(0, 170, 255, 0);
+    }
+    50% {
+        box-shadow: inset 0 0 30px rgba(0, 170, 255, 0.6);
+    }
+    100% {
+        box-shadow: inset 0 0 0 rgba(0, 170, 255, 0);
+    }
+}
+
 footer {
     text-align: center;
     padding: 10px;
