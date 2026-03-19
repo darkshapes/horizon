@@ -105,7 +105,8 @@ Enhance the prototype with reusable components, configuration options, and produ
    - Fixed test case for float precision rounding (adjusted expected value)
    - All 37 tests now pass
 
-- [ ] Commit all improvements:
-  - Add all files (refactored modules, tests, improvements)
-  - Commit with message `+ modular structure with binding API, keyboard support, undo/redo, tests`
-  - Include summary of new features in commit body
+- [x] Commit all improvements:
+   - Add all files (refactored modules, tests, improvements)
+   - Commit with message `+ modular structure with binding API, keyboard support, undo/redo, tests`
+   - Include summary of new features in commit body
+   - Commit 97d3962: test-runner.js with 37 unit tests, Phase-02 doc updates
