@@ -85,22 +85,26 @@ function setupResetFunctionality(sliderInstance) {
     
     sliderArrays.forEach(array => {
         array.addEventListener('touchstart', (e) => {
-            e.changedTouches.forEach(touch => {
+            const touches = e.changedTouches;
+            for (let i = 0; i < touches.length; i++) {
+                const touch = touches[i];
                 const channelEl = touch.target.closest('.channel');
-                if (!channelEl) return;
+                if (!channelEl) continue;
                 
                 const arrayId = channelEl.closest('.slider-array').id;
                 const channelIndex = parseInt(channelEl.dataset.channel);
                 const key = `${arrayId}-${channelIndex}`;
                 
                 touchStartTimes.set(touch.identifier, { key, time: Date.now() });
-            });
+            }
         }, { passive: true });
         
         array.addEventListener('touchend', (e) => {
-            e.changedTouches.forEach(touch => {
+            const touches = e.changedTouches;
+            for (let i = 0; i < touches.length; i++) {
+                const touch = touches[i];
                 const touchData = touchStartTimes.get(touch.identifier);
-                if (!touchData) return;
+                if (!touchData) continue;
                 
                 const { key, time: startTime } = touchData;
                 
@@ -113,7 +117,7 @@ function setupResetFunctionality(sliderInstance) {
                 
                 recordTap(startTime, key);
                 touchStartTimes.delete(touch.identifier);
-            });
+            }
         }, { passive: true });
     });
 }

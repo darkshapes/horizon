@@ -188,13 +188,15 @@ class MultiTouchSlider {
 
   handleTouchStart(e) {
     e.preventDefault();
-    e.changedTouches.forEach((touch) => {
+    const touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i++) {
+      const touch = touches[i];
       const detected = detectChannelFromPoint(touch.clientX, touch.clientY);
-      if (!detected) return;
+      if (!detected) continue;
       const { arrayId, channelIndex, element: channelEl } = detected;
       const key = `${arrayId}-${channelIndex}`;
       const channel = this.channels.get(key);
-      if (!channel) return;
+      if (!channel) continue;
       setActiveState(channel, true);
       const currentRaw = channel.value.getRawPercentage();
       this.activeTouches.set(touch.identifier, {
@@ -203,16 +205,18 @@ class MultiTouchSlider {
         startRaw: currentRaw,
         savedValue: currentRaw,
       });
-    });
+    }
   }
 
   handleTouchMove(e) {
     e.preventDefault();
-    e.changedTouches.forEach((touch) => {
+    const touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i++) {
+      const touch = touches[i];
       const touchData = this.activeTouches.get(touch.identifier);
-      if (!touchData) return;
+      if (!touchData) continue;
       const channel = this.channels.get(touchData.key);
-      if (!channel) return;
+      if (!channel) continue;
       const deltaPct = calculateDeltaY(
         touch.clientY,
         touchData.startY,
@@ -222,23 +226,26 @@ class MultiTouchSlider {
       channel.value.setFromPercentage(newRaw);
       this.markDirty(touchData.key);
       this.persistState();
-    });
+    }
   }
 
   handleTouchEnd(e) {
     e.preventDefault();
-    e.changedTouches.forEach((touch) => {
+    const touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i++) {
+      const touch = touches[i];
       const touchData = this.activeTouches.get(touch.identifier);
-      if (!touchData) return;
+      if (!touchData) continue;
       const channel = this.channels.get(touchData.key);
       if (channel) {
         const newValue = channel.value.getRawPercentage();
-        if (newValue !== touchData.savedValue && this.saveHistoryEntry)
+        if (newValue !== touchData.savedValue && this.saveHistoryEntry) {
           this.saveHistoryEntry(channel);
+        }
         setActiveState(channel, false);
       }
       this.activeTouches.delete(touch.identifier);
-    });
+    }
   }
 
   handlePointerDown(e) {
