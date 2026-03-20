@@ -12,26 +12,26 @@ Add real-world integration examples demonstrating how the sliders can connect to
    - Create midi-demo.html showcasing MIDI-connected sliders
    - Note: Created midi-demo.html with MIDIOutput class, 3 mode switching (CC/Note/Pitch Bend), visual status indicator, and message log
 
-- [ ] Create Web Audio API demo:
+- [x] Create Web Audio API demo:
   - Generate simple oscillator tones (4 channels, one per slider)
   - Map slider to frequency, volume, detune, or filter cutoff
   - Use multi-touch sliders to adjust audio parameters in real-time
   - Include start/stop audio context handling
   - Create audio-demo.html with working audio visualization
 
-- [ ] Add state persistence layer:
+- [x] Add state persistence layer:
   - Persist slider values to localStorage on change with debounce
   - Auto-restore last known state on page load
   - Support named presets (save/load between named configurations)
   - Add UI toggles to enable/disable persistence
   - Clear storage option for reset
 
-- [ ] Create reactive data binding example:
-  - Demonstrate binding to external observable/state (vanilla JS pub-sub)
-  - Show sliders updating when external state changes
-  - Show external state updating when sliders change
-  - Include counter-example where bindings are one-way only
-  - Document pattern in inline comments for reuse
+- [x] Create reactive data binding example:
+   - Demonstrate binding to external observable/state (vanilla JS pub-sub)
+   - Show sliders updating when external state changes
+   - Show external state updating when sliders change
+   - Include counter-example where bindings are one-way only
+   - Document pattern in inline comments for reuse
 
 - [ ] Add performance optimization:
   - Throttle rapid touch events (60fps max updates)
