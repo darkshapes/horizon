@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Horizon - MIDI Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .midi-status {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 10px 15px;
+            background: var(--surface-color);
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+        .midi-status.connected {
+            border-left: 3px solid #4ade80;
+        }
+        .midi-status.disconnected {
+            border-left: 3px solid #f87171;
+        }
+        .midi-message-log {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--surface-color);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            font-family: monospace;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+        .midi-message {
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border-color);
+            animation: flash 0.5s ease;
+        }
+        @keyframes flash {
+            0% { background-color: rgba(74, 222, 128, 0.3); }
+            100% { background-color: transparent; }
+        }
+        .midi-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .midi-indicator.sent {
+            background-color: #4ade80;
+            box-shadow: 0 0 8px #4ade80;
+            animation: pulse 0.3s ease;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .demo-header {
+            text-align: center;
+            padding: 20px;
+            background: var(--surface-color);
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .demo-header h2 {
+            margin: 0 0 10px 0;
+            color: var(--text-color);
+        }
+        .demo-header p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .midi-mode-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .midi-mode-btn {
+            padding: 8px 16px;
+            background: var(--surface-color);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        .midi-mode-btn.active {
+            background: var(--active-color);
+            color: #000;
+            border-color: var(--active-color);
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙</button>
+    
+    <div class="midi-status disconnected" id="midi-status">
+        <span class="midi-indicator" id="midi-indicator"></span>
+        <span id="midi-status-text">MIDI not connected</span>
+    </div>
+    
+    <div class="midi-message-log" id="midi-log"></div>
+    
+    <main style="padding-top: 60px;">
+        <div class="demo-header">
+            <h2>MIDI Output Demo</h2>
+            <p>Sliders control MIDI messages sent to connected devices</p>
+            <div class="midi-mode-selector">
+                <button class="midi-mode-btn active" data-mode="cc">MIDI CC</button>
+                <button class="midi-mode-btn" data-mode="note">Note</button>
+                <button class="midi-mode-btn" data-mode="pitchbend">Pitch Bend</button>
+            </div>
+        </div>
+        
+        <div class="slider-array" id="array-1">
+            <div class="channel" data-channel="0" data-type="int" data-midi-channel="1">
+                <div class="channel-track">
+                    <div class="channel-indicator"></div>
+                    <div class="channel-value-overlay"></div>
+                </div>
+                <div class="channel-display">0</div>
+            </div>
+            <div class="channel" data-channel="1" data-type="int" data-midi-channel="1">
+                <div class="channel-track">
+                    <div class="channel-indicator"></div>
+                    <div class="channel-value-overlay"></div>
+                </div>
+                <div class="channel-display">0</div>
+            </div>
+            <div class="channel" data-channel="2" data-type="int" data-midi-channel="1">
+                <div class="channel-track">
+                    <div class="channel-indicator"></div>
+                    <div class="channel-value-overlay"></div>
+                </div>
+                <div class="channel-display">0</div>
+            </div>
+            <div class="channel" data-channel="3" data-type="int" data-midi-channel="1">
+                <div class="channel-track">
+                    <div class="channel-indicator"></div>
+                    <div class="channel-value-overlay"></div>
+                </div>
+                <div class="channel-display">0</div>
+            </div>
+        </div>
+        <div class="slider-array" id="array-2">
+            <div class="channel" data-channel="0" data-type="int" data-midi-channel="2">
+                <div class="channel-track">
+                    <div class="channel-indicator"></div>
+                    <div class="channel-value-overlay"></div>
+                </div>
+                <div class="channel-display">0</div>
+            </div>
+            <div class="channel" data-channel="1" data-type="int" data-midi-channel="2">
+                <div class="channel-track">
+                    <div class="channel-indicator"></div>
+                    <div class="channel-value-overlay"></div>
+                </div>
+                <div class="channel-display">0</div>
+            </div>
+            <div class="channel" data-channel="2" data-type="int" data-midi-channel="2">
+                <div class="channel-track">
+                    <div class="channel-indicator"></div>
+                    <div class="channel-value-overlay"></div>
+                </div>
+                <div class="channel-display">0</div>
+            </div>
+            <div class="channel" data-channel="3" data-type="int" data-midi-channel="2">
+                <div class="channel-track">
+                    <div class="channel-indicator"></div>
+                    <div class="channel-value-overlay"></div>
+                </div>
+                <div class="channel-display">0</div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <small>Horizon MIDI Demo | Darkshapes</small>
+    </footer>
+    
+    <script>
+        class MIDIOutput {
+            constructor(sliderInstance) {
+                this.sliderInstance = sliderInstance;
+                this.webMidi = null;
+                this.output = null;
+                this.mode = 'cc';
+                this.init();
+            }
+            
+            async init() {
+                if (!navigator.requestMIDIAccess) {
+                    this.log('Web MIDI API not supported in this browser');
+                    this.updateStatus(false, 'Web MIDI not supported');
+                    return;
+                }
+                
+                try {
+                    const midia = await navigator.requestMIDIAccess({ sysex: true });
+                    this.webMidi = midia;
+                    
+                    this.webMidi.onstatechange = (e) => {
+                        this.log(`MIDI device state change: ${e.name} ${e.type}`);
+                        this.updateOutput();
+                    };
+                    
+                    this.updateOutput();
+                    
+                    midia.onstatechange = (e) => {
+                        this.log(`Device ${e.name}: ${e.type} ${e.detail ? e.detail.value : ''}`);
+                        this.updateOutput();
+                    };
+                } catch (e) {
+                    console.error('MIDI access denied:', e);
+                    this.updateStatus(false, 'MIDI access denied');
+                }
+            }
+            
+            updateOutput() {
+                if (!this.webMidi) return;
+                
+                let outputs = [];
+                for (let output of this.webMidi.outputs) {
+                    outputs.push(output);
+                }
+                
+                if (outputs.length > 0) {
+                    this.output = outputs[0];
+                    this.updateStatus(true, `Connected: ${this.output.name}`);
+                    this.log(`MIDI output selected: ${this.output.name}`);
+                } else {
+                    this.output = null;
+                    this.updateStatus(false, 'No MIDI output found');
+                    this.log('No MIDI output devices found');
+                }
+            }
+            
+            updateStatus(connected, text) {
+                const statusEl = document.getElementById('midi-status');
+                const indicatorEl = document.getElementById('midi-indicator');
+                const textEl = document.getElementById('midi-status-text');
+                
+                if (connected) {
+                    statusEl.classList.remove('disconnected');
+                    statusEl.classList.add('connected');
+                    textEl.textContent = text;
+                    indicatorEl.classList.remove('sent');
+                } else {
+                    statusEl.classList.remove('connected');
+                    statusEl.classList.add('disconnected');
+                    textEl.textContent = text;
+                }
+            }
+            
+            send(cc, value, channel) {
+                if (!this.output || !this.webMidi) return false;
+                
+                const midiChannel = (channel - 1) & 0x0F;
+                let message = [];
+                
+                switch (this.mode) {
+                    case 'cc':
+                        const ccNumber = cc & 0x7F;
+                        const ccValue = value & 0x7F;
+                        message = [0xB0 | midiChannel, ccNumber, ccValue];
+                        this.displaySent(cc, `CC ${ccNumber} = ${ccValue}`);
+                        break;
+                        
+                    case 'note':
+                        const noteNumber = value & 0x7F;
+                        const noteVelocity = 100;
+                        message = [0x90 | midiChannel, noteNumber, noteVelocity];
+                        this.displaySent(cc, `Note ${noteNumber} (velocity ${noteVelocity})`);
+                        break;
+                        
+                    case 'pitchbend':
+                        const pitchBend = value & 0x7FFF;
+                        const lsb = pitchBend & 0x7F;
+                        const msb = (pitchBend >> 7) & 0x7F;
+                        message = [0xE0 | midiChannel, ls, msb];
+                        this.displaySent(cc, `Pitch Bend ${pitchBend}`);
+                        break;
+                }
+                
+                const now = this.webMidi.currentTime;
+                this.output.send(message, now);
+                this.showFlashIndicator();
+                return true;
+            }
+            
+            showFlashIndicator() {
+                const indicatorEl = document.getElementById('midi-indicator');
+                indicatorEl.classList.add('sent');
+                setTimeout(() => {
+                    indicatorEl.classList.remove('sent');
+                }, 300);
+            }
+            
+            displaySent(channelIndex, message) {
+                const logEl = document.getElementById('midi-log');
+                const entry = document.createElement('div');
+                entry.className = 'midi-message';
+                entry.textContent = `[Ch${channelIndex + 1}] ${message}`;
+                logEl.appendChild(entry);
+                logEl.scrollTop = logEl.scrollHeight;
+                
+                if (logEl.children.length > 20) {
+                    logEl.removeChild(logEl.firstChild);
+                }
+            }
+            
+            log(message) {
+                console.log('[MIDI]', message);
+            }
+        }
+
+        class SliderValue {
+            constructor(type, options = {}) {
+                this.type = type;
+                this.rawValue = 0.5;
+                
+                switch (type) {
+                    case 'int':
+                        this.min = options.min ?? -127;
+                        this.max = options.max ?? 127;
+                        break;
+                    case 'float':
+                        this.min = options.min ?? -10.0;
+                        this.max = options.max ?? 10.0;
+                        this.precision = options.precision ?? 0.1;
+                        break;
+                    case 'iterable':
+                        this.items = options.items ?? ['red', 'green', 'blue', 'yellow', 'purple'];
+                        break;
+                    case 'bool':
+                        break;
+                }
+            }
+            
+            setFromPercentage(pct) {
+                this.rawValue = Math.max(0, Math.min(1, pct));
+            }
+            
+            getRawPercentage() {
+                return this.rawValue;
+            }
+            
+            get() {
+                switch (this.type) {
+                    case 'int':
+                        const range = this.max - this.min;
+                        const centered = (this.rawValue - 0.5) * 2;
+                        const result = Math.round((centered * range) / 2);
+                        return Math.max(this.min, Math.min(this.max, result));
+                    case 'float':
+                        const floatRange = this.max - this.min;
+                        const centeredFloat = (this.rawValue - 0.5) * 2;
+                        const floatVal = (centeredFloat * floatRange) / 2;
+                        return Math.round(floatVal / this.precision) * this.precision;
+                    case 'iterable':
+                        const index = Math.round(this.rawValue * (this.items.length - 1));
+                        return this.items[Math.max(0, Math.min(this.items.length - 1, index))];
+                    case 'bool':
+                        return this.rawValue > 0.5;
+                }
+                return 0;
+            }
+            
+            getDisplay() {
+                const val = this.get();
+                if (this.type === 'float') {
+                    return parseFloat(val).toFixed(1);
+                }
+                return String(val);
+            }
+        }
+
+        class MultiTouchSlider {
+            constructor() {
+                this.channels = new Map();
+                this.activeTouches = new Map();
+                this.midi = null;
+                this.initChannels();
+                this.initMIDI();
+                this.setupEventListeners();
+                this.initTheme();
+                this.setupModeButtons();
+            }
+            
+            initTheme() {
+                const savedTheme = localStorage.getItem('slider-theme');
+                const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+                const theme = savedTheme || (prefersLight ? 'light' : 'dark');
+                document.documentElement.setAttribute('data-theme', theme);
+                
+                const themeToggle = document.getElementById('theme-toggle');
+                if (themeToggle) {
+                    themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+                    themeToggle.addEventListener('click', () => {
+                        const currentTheme = document.documentElement.getAttribute('data-theme');
+                        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                        document.documentElement.setAttribute('data-theme', newTheme);
+                        localStorage.setItem('slider-theme', newTheme);
+                        themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
+                    });
+                }
+            }
+            
+            setupModeButtons() {
+                const buttons = document.querySelectorAll('.midi-mode-btn');
+                buttons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        buttons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        const mode = btn.dataset.mode;
+                        this.midi.mode = mode;
+                        const modeLabel = mode === 'cc' ? 'MIDI CC' : mode === 'note' ? 'Note' : 'Pitch Bend';
+                        this.midi.log(`Mode changed to: ${modeLabel}`);
+                    });
+                });
+            }
+            
+            initMIDI() {
+                this.midi = new MIDIOutput(this);
+            }
+            
+            initChannels() {
+                const channelElements = document.querySelectorAll('.channel');
+                channelElements.forEach((el, index) => {
+                    const arrayId = el.closest('.slider-array').id;
+                    const channelIndex = parseInt(el.dataset.channel);
+                    const type = el.dataset.type;
+                    const key = `${arrayId}-${channelIndex}`;
+                    
+                    let options = {};
+                    if (type === 'int') {
+                        options = { min: -127, max: 127 };
+                    } else if (type === 'float') {
+                        options = { min: -10.0, max: 10.0, precision: 0.1 };
+                    } else if (type === 'iterable') {
+                        options = { items: ['red', 'green', 'blue', 'yellow', 'purple'] };
+                    }
+                    
+                    const channelObj = {
+                        element: el,
+                        display: el.querySelector('.channel-display'),
+                        indicator: el.querySelector('.channel-indicator'),
+                        value: new SliderValue(type, options),
+                        startY: null
+                    };
+                    
+                    if (type === 'bool') {
+                        channelObj.element.classList.add('bool-false');
+                    }
+                    
+                    this.channels.set(key, channelObj);
+                    this.updateChannelDisplay(channelObj);
+                });
+            }
+            
+            setupEventListeners() {
+                const sliderArrays = document.querySelectorAll('.slider-array');
+                
+                sliderArrays.forEach(array => {
+                    array.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+                    array.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
+                    array.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+                    array.addEventListener('touchcancel', (e) => this.handleTouchEnd(e), { passive: false });
+                    
+                    array.addEventListener('pointerdown', (e) => this.handlePointerDown(e));
+                    document.addEventListener('pointermove', (e) => this.handlePointerMove(e));
+                    document.addEventListener('pointerup', (e) => this.handlePointerUp(e));
+                });
+            }
+            
+            handleTouchStart(e) {
+                e.preventDefault();
+                e.changedTouches.forEach(touch => {
+                    const channelEl = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.channel');
+                    if (!channelEl) return;
+                    
+                    const arrayId = channelEl.closest('.slider-array').id;
+                    const channelIndex = parseInt(channelEl.dataset.channel);
+                    const key = `${arrayId}-${channelIndex}`;
+                    
+                    const channel = this.channels.get(key);
+                    if (!channel) return;
+                    
+                    channel.element.classList.add('active');
+                    this.activeTouches.set(touch.identifier, {
+                        key,
+                        startY: touch.clientY,
+                        startRaw: channel.value.getRawPercentage()
+                    });
+                });
+            }
+            
+            handleTouchMove(e) {
+                e.preventDefault();
+                e.changedTouches.forEach(touch => {
+                    const touchData = this.activeTouches.get(touch.identifier);
+                    if (!touchData) return;
+                    
+                    const channel = this.channels.get(touchData.key);
+                    if (!channel) return;
+                    
+                    const deltaY = touch.clientY - touchData.startY;
+                    const height = channel.element.offsetHeight;
+                    const deltaPct = -deltaY / height;
+                    const newRaw = Math.max(0, Math.min(1, touchData.startRaw + deltaPct));
+                    
+                    channel.value.setFromPercentage(newRaw);
+                    this.updateChannelDisplay(channel);
+                    this.sendMIDI(channel);
+                });
+            }
+            
+            handleTouchEnd(e) {
+                e.preventDefault();
+                e.changedTouches.forEach(touch => {
+                    const touchData = this.activeTouches.get(touch.identifier);
+                    if (!touchData) return;
+                    
+                    const channel = this.channels.get(touchData.key);
+                    if (channel) {
+                        channel.element.classList.remove('active');
+                    }
+                    this.activeTouches.delete(touch.identifier);
+                });
+            }
+            
+            handlePointerDown(e) {
+                const channelEl = e.target.closest('.channel');
+                if (!channelEl || e.pointerType === 'touch') return;
+                
+                const arrayId = channelEl.closest('.slider-array').id;
+                const channelIndex = parseInt(channelEl.dataset.channel);
+                const key = `${arrayId}-${channelIndex}`;
+                
+                const channel = this.channels.get(key);
+                if (!channel) return;
+                
+                channel.element.classList.add('active');
+                channel.element.setPointerCapture(e.pointerId);
+                this.activeTouches.set(e.pointerId, {
+                    key,
+                    startY: e.clientY,
+                    startRaw: channel.value.getRawPercentage(),
+                    element: channel.element
+                });
+            }
+            
+            handlePointerMove(e) {
+                const touchData = this.activeTouches.get(e.pointerId);
+                if (!touchData || e.pointerType === 'touch') return;
+                
+                const channel = this.channels.get(touchData.key);
+                if (!channel) return;
+                
+                const deltaY = e.clientY - touchData.startY;
+                const height = channel.element.offsetHeight;
+                const deltaPct = -deltaY / height;
+                const newRaw = Math.max(0, Math.min(1, touchData.startRaw + deltaPct));
+                
+                channel.value.setFromPercentage(newRaw);
+                this.updateChannelDisplay(channel);
+                this.sendMIDI(channel);
+            }
+            
+            handlePointerUp(e) {
+                const touchData = this.activeTouches.get(e.pointerId);
+                if (!touchData) return;
+                
+                const element = touchData.element;
+                if (element) {
+                    element.classList.remove('active');
+                    element.releasePointerCapture(e.pointerId);
+                }
+                this.activeTouches.delete(e.pointerId);
+            }
+            
+            updateChannelDisplay(channel) {
+                const pct = channel.value.getRawPercentage();
+                channel.indicator.style.top = `${(1 - pct) * 100}%`;
+                channel.display.textContent = channel.value.getDisplay();
+                
+                if (channel.value.type === 'bool') {
+                    const isTrue = pct > 0.5;
+                    channel.display.style.color = isTrue ? 'var(--active-color)' : 'var(--text-color)';
+                    channel.display.style.textShadow = isTrue ? '0 0 10px var(--active-color)' : '0 1px 2px rgba(0, 0, 0, 0.5)';
+                    channel.element.classList.remove('bool-true', 'bool-false');
+                    channel.element.classList.add(isTrue ? 'bool-true' : 'bool-false');
+                } else {
+                    channel.display.style.color = 'var(--text-color)';
+                    channel.display.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.5)';
+                }
+            }
+            
+            sendMIDI(channel) {
+                const arrayId = channel.element.closest('.slider-array').id;
+                const key = Array.from(this.channels.entries())
+                    .find(([, c]) => c === channel)?.[0];
+                
+                const parts = key.split('-');
+                const channelIndex = parseInt(parts[parts.length - 1]);
+                const midiChannel = parseInt(channel.element.dataset.midiChannel) || 1;
+                const value = channel.value.get();
+                
+                if (this.midi) {
+                    this.midi.send(channelIndex, value, midiChannel);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new MultiTouchSlider();
+        });
+    </script>
+</body>
+</html>
