@@ -1,0 +1,17 @@
+{
+  "name": "horizon",
+  "version": "0.1.0",
+  "description": "Universal Multi‑Touch Sliders",
+  "main": "index.html",
+  "scripts": {
+    "serve": "npx serve -p 8080",
+    "build": "npx esbuild src/main.js --bundle --minify --outfile=build/main.js",
+    "test:ui": "npx playwright test tests/ui-touch-tests.spec.js"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0",
+    "esbuild": "^0.20.0",
+    "playwright": "^1.46.0",
+    "@playwright/test": "^1.46.0"
+  }
+}

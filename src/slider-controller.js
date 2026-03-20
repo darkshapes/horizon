@@ -22,11 +22,12 @@ export class MultiTouchSlider {
       });
 
       // Pointer Events
-      array.addEventListener("pointerdown", (e) => this.handlePointerDown(e));
-      document.addEventListener("pointermove", (e) =>
-        this.handlePointerMove(e),
-      );
-      document.addEventListener("pointerup", (e) => this.handlePointerUp(e));
+if (!('ontouchstart' in window)) {
+          // Fallback for browsers without touch support
+          array.addEventListener('mousedown', (e) => this.handlePointerDown(e));
+          document.addEventListener('mousemove', (e) => this.handlePointerMove(e));
+          document.addEventListener('mouseup', (e) => this.handlePointerUp(e));
+        }
 
       // Initialize Channels
       array.querySelectorAll(".channel").forEach((channelEl) => {
@@ -55,26 +56,155 @@ export class MultiTouchSlider {
     });
   }
 
-  // ... [Keep all your handleTouch* and handlePointer* methods exactly as they were] ...
-  // I am omitting the handlers here for brevity, but copy them from your original code into this class.
+    handleTouchStart(e) {
+    e.preventDefault();
+    const touches = e.touches;
+    for (let i = 0; i < touches.length; i++) {
+      this.processTouchStart(touches[i]);
+    }
+  }
 
-  handleTouchStart(e) {
-    /* ... logic ... */
-  }
   handleTouchMove(e) {
-    /* ... logic ... */
+    e.preventDefault();
+    const touches = e.touches;
+    for (let i = 0; i < touches.length; i++) {
+      this.processTouchMove(touches[i]);
+    }
   }
+
   handleTouchEnd(e) {
-    /* ... logic ... */
+    const touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i++) {
+      this.processTouchEnd(touches[i]);
+    }
   }
+
   handlePointerDown(e) {
-    /* ... logic ... */
+    this.processPointerDown(e);
   }
+
   handlePointerMove(e) {
-    /* ... logic ... */
+    this.processPointerMove(e);
   }
+
   handlePointerUp(e) {
-    /* ... logic ... */
+    this.processPointerUp(e);
+  }
+
+  processTouchStart(touch) {
+    const target = this.getElementAtCoordinates(touch.clientX, touch.clientY);
+    if (!target) return;
+
+    const channelKey = target.dataset.channel;
+    if (!channelKey) return;
+
+    const activeTouch = {
+      id: touch.identifier,
+      x: touch.clientX,
+      y: touch.clientY,
+      channelKey: channelKey
+    };
+
+    this.activeTouches.set(touch.identifier, activeTouch);
+    target.classList.add('active');
+  }
+
+  processTouchMove(touch) {
+    const activeTouch = this.activeTouches.get(touch.identifier);
+    if (!activeTouch) return;
+
+    const deltaY = touch.clientY - activeTouch.y;
+    if (Math.abs(deltaY) < 0.5) return;
+
+    activeTouch.y = touch.clientY;
+    this.updateChannelValue(activeTouch.channelKey, deltaY);
+  }
+
+  processTouchEnd(touch) {
+    const activeTouch = this.activeTouches.get(touch.identifier);
+    if (!activeTouch) return;
+
+    const target = document.querySelector(`.channel[data-channel="${activeTouch.channelKey}"]`);
+    if (target) {
+      target.classList.remove('active');
+    }
+
+    this.activeTouches.delete(touch.identifier);
+  }
+
+  processPointerDown(e) {
+    if (e.button !== 0) return;
+
+    const target = this.getElementAtCoordinates(e.clientX, e.clientY);
+    if (!target) return;
+
+    const channelKey = target.dataset.channel;
+    if (!channelKey) return;
+
+    const activePointer = {
+      x: e.clientX,
+      y: e.clientY,
+      channelKey: channelKey
+    };
+
+    this.activePointer = activePointer;
+    target.classList.add('active');
+  }
+
+  processPointerMove(e) {
+    if (!this.activePointer) return;
+    if (e.buttons !== 1) {
+      this.processPointerUp(e);
+      return;
+    }
+
+    const deltaY = e.clientY - this.activePointer.y;
+    if (Math.abs(deltaY) < 0.5) return;
+
+    this.activePointer.y = e.clientY;
+    this.updateChannelValue(this.activePointer.channelKey, deltaY);
+  }
+
+  processPointerUp(e) {
+    if (!this.activePointer) return;
+
+    const target = document.querySelector(`.channel[data-channel="${this.activePointer.channelKey}"]`);
+    if (target) {
+      target.classList.remove('active');
+    }
+
+    this.activePointer = null;
+  }
+
+  getElementAtCoordinates(x, y) {
+    const elements = document.elementsFromPoint(x, y);
+    for (const el of elements) {
+      if (el.classList.contains('channel')) {
+        return el;
+      }
+    }
+    return null;
+  }
+
+  updateChannelValue(channelKey, deltaY) {
+    const channelData = this.channels.get(channelKey);
+    if (!channelData) return;
+
+    const indicatorHeight = channelData.indicator.offsetHeight;
+    const arrayElement = channelData.element.parentElement;
+    const arrayHeight = arrayElement.offsetHeight;
+
+    const deltaPercentage = deltaY / arrayHeight;
+    const currentPct = channelData.value.getRawPercentage();
+    let newPct = currentPct - deltaPercentage;
+
+    newPct = Math.max(0, Math.min(1, newPct));
+    channelData.value.setFromNormalized(newPct);
+
+    const indicatorTop = (1 - channelData.value.getRawPercentage()) * 100;
+    channelData.indicator.style.top = `${indicatorTop}%`;
+
+    this.updateChannelDisplay(channelData);
   }
 
   updateChannelDisplay(channel) {

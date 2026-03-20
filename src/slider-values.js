@@ -29,6 +29,10 @@ class SliderValue {
         return this.rawValue;
     }
     
+    getRaw() {
+        return this.rawValue;
+    }
+    
     get() {
         switch (this.type) {
             case 'int':
