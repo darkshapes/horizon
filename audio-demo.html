@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Horizon - Audio Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --primary-color: #1e90ff;
+            --accent-color: #ff4500;
+            --bg-color: #fafafa;
+            --surface-color: #ffffff;
+            --text-color: #111;
+            --text-muted: #666;
+            --border-color: #ddd;
+            --active-color: #4ade80;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1e1e1e;
+            --surface-color: #2a2a2a;
+            --text-color: #e4e4e4;
+            --text-muted: #aaa;
+            --border-color: #444;
+            --active-color: #4ade80;
+        }
+        body{margin:0;background:var(--bg-color);color:var(--text-color);font-family:Arial,sans-serif;}
+        .theme-toggle{position:fixed;top:10px;right:10px;background:var(--surface-color);border:none;padding:5px 10px;border-radius:5px;font-size:18px;cursor:pointer;z-index:1000;}
+        .audio-status{position:fixed;top:50px;right:20px;padding:5px 10px;background:var(--surface-color);border-radius:5px;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:100;}
+        .demo-header{padding:20px;background:var(--surface-color);margin-bottom:20px;border-radius:8px;text-align:center;}
+        .demo-header h2{margin:0;color:var(--text-color);}
+        .demo-header p{margin:0;color:var(--text-muted);font-size:14px;}
+        .slider-array{display:flex;gap:10px;padding:10px;overflow-x:auto;}
+        .channel{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;user-select:none;cursor:pointer;}
+        .channel-track{position:relative;width:30px;height:200px;background:var(--border-color);border-radius:5px;}
+        .channel-indicator{position:absolute;bottom:0;width:30px;height:10px;background:var(--primary-color);border-radius:3px;transition:background 0.2s;}
+        .channel-display{margin-top:5px;font-size:14px;color:var(--text-color);}
+        .audio-start{display:block;margin:10px auto;padding:8px 16px;background:var(--primary-color);color:#fff;border:none;border-radius:4px;font-size:14px;cursor:pointer;}
+        .audio-start:disabled{opacity:0.5;cursor:not-allowed;}
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙</button>
+    <div class="audio-status" id="audio-status">Audio not started</div>
+
+    <main>
+        <div class="demo-header">
+            <h2>Audio API Demo</h2>
+            <p>Sliders control 4 oscillators in real time via Web Audio API</p>
+            <button class="audio-start" id="audio-start">Start Audio</button>
+        </div>
+        <div class="slider-array" id="array-1">
+            <div class="channel" data-channel="0" data-type="float" data-param="frequency">
+                <div class="channel-track"><div class="channel-indicator"></div></div>
+                <div class="channel-display">0</div>
+            </div>
+            <div class="channel" data-channel="1" data-type="float" data-param="detune">
+                <div class="channel-track"><div class="channel-indicator"></div></div>
+                <div class="channel-display">0</div>
+            </div>
+            <div class="channel" data-channel="2" data-type="float" data-param="gain">
+                <div class="channel-track"><div class="channel-indicator"></div></div>
+                <div class="channel-display">0</div>
+            </div>
+            <div class="channel" data-channel="3" data-type="float" data-param="cutoff">
+                <div class="channel-track"><div class="channel-indicator"></div></div>
+                <div class="channel-display">0</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Basic slider value handling (same as MIDI demo's SliderValue)
+        class SliderValue {
+            constructor(type, options = {}) {this.type=type;this.raw=0.5;}
+            setFromPct(p){this.raw= Math.max(0,Math.min(1,p));}
+            getRaw(){return this.raw;}
+            get(){return Math.round(this.raw*100);}
+            display(){return Math.round(this.raw*100);} }
+        
+        class AudioDemo {
+            constructor(){this.ctx=null;this.osc=new Array(4).fill(null);this.gain=new Array(4).fill(null);this.filter=new Array(4).fill(null);this.channels=new Map();this.active=new Map();this.initChannels();this.setupEvents();this.initTheme();}
+            initTheme(){const t=localStorage.getItem('audio-theme')||('light');document.documentElement.setAttribute('data-theme',t);const btn=document.getElementById('theme-toggle');btn.textContent=t==='light'?'🌙':'☀️';btn.onclick=()=>{const cur=document.documentElement.getAttribute('data-theme');const n=cur==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('audio-theme',n);btn.textContent=n==='light'?'🌙':'☀️';}}
+            initChannels(){document.querySelectorAll('.channel').forEach(el=>{const ch=el.dataset.channel;const sv=new SliderValue(el.dataset.type);const obj={el,sv,display:el.querySelector('.channel-display'),indicator:el.querySelector('.channel-indicator')};this.channels.set(ch,obj);this.updateDisplay(obj);});}
+            setupEvents(){const arr=document.querySelectorAll('.slider-array');arr.forEach(a=>{a.addEventListener('touchstart',e=>this.tstart(e),{passive:false});a.addEventListener('touchmove',e=>this.tmove(e),{passive:false});a.addEventListener('touchend',e=>this.tend(e),{passive:false});});document.getElementById('audio-start').onclick=e=>this.start(e);}  
+            start(){if(!this.ctx){this.ctx=new (window.AudioContext||webkitAudioContext)();for(let i=0;i<4;i++){this.osc[i]=this.ctx.createOscillator();this.gain[i]=this.ctx.createGain();this.filter[i]=this.ctx.createBiquadFilter();this.osc[i].type='sine';this.osc[i].connect(this.filter[i]).connect(this.gain[i]).connect(this.ctx.destination);this.osc[i].frequency.value=300+(i*100);this.osc[i].detune.value=0;this.osc[i].start();this.gain[i].gain.value=0.2;if(i===3){this.filter[i].type='lowpass';this.filter[i].frequency.value=1000;}}document.getElementById('audio-status').textContent='Audio started';document.getElementById('audio-start').disabled=true;this.ctx.resume();}
+            tstart(e){e.preventDefault();Array.from(e.changedTouches).forEach(t=>{const ch=document.elementFromPoint(t.clientX,t.clientY)?.closest('.channel');if(ch){const id=ch.dataset.channel;const data={ch, startY:t.clientY,startRaw:this.channels.get(id).sv.getRaw()};this.active.set(t.identifier,data);}})}
+            tmove(e){e.preventDefault();Array.from(e.changedTouches).forEach(t=>{const data=this.active.get(t.identifier);if(!data)return;const id=document.elementFromPoint(t.clientX,t.clientY)?.closest('.channel')?.dataset.channel;if(!id)return;const ch=this.channels.get(id);const deltaY=t.clientY-data.startY;const pct=ch.sv.getRaw()+(-deltaY/200);ch.sv.setFromPct(pct);this.updateDisplay(ch);this.updateAudio(id,ch);})}
+            tend(e){e.preventDefault();Array.from(e.changedTouches).forEach(t=>{this.active.delete(t.identifier);});}
+            updateDisplay(ch){ch.indicator.style.top=(1-ch.sv.getRaw())*100+'%';ch.display.textContent=ch.sv.getRaw().toFixed(2);}
+            updateAudio(id,ch){const val=ch.sv.getRaw()*100;switch(id){case '0':this.osc[0].frequency.value=200+val*8;break;case '1':this.osc[1].detune.value=-1200+val*2400;break;case '2':this.gain[2].gain.value=val/100;break;case '3':this.filter[3].frequency.value=200+val*18;break;}}
+        }
+        document.addEventListener('DOMContentLoaded',e=>new AudioDemo());
+    </script>
+</body>
+</html>

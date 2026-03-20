@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Horizon - Reactive Binding Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --primary-color: #1e90ff;
+            --accent-color: #ff4500;
+            --bg-color: #fafafa;
+            --surface-color: #ffffff;
+            --text-color: #111;
+            --text-muted: #666;
+            --border-color: #ddd;
+            --active-color: #4ade80;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1e1e1e;
+            --surface-color: #2a2a2a;
+            --text-color: #e4e4e4;
+            --text-muted: #aaa;
+            --border-color: #444;
+            --active-color: #4ade80;
+        }
+        body{margin:0;background:var(--bg-color);color:var(--text-color);font-family:Arial,sans-serif;}
+        .theme-toggle{position:fixed;top:10px;right:10px;background:var(--surface-color);border:none;padding:5px 10px;border-radius:5px;font-size:18px;cursor:pointer;z-index:1000;}
+        .state-display{margin:20px; padding:10px; background:var(--surface-color); border-radius:5px; font-family:monospace; word-wrap:break-word;}
+        .demo-header{padding:20px;background:var(--surface-color);margin-bottom:20px;border-radius:8px;text-align:center;}
+        .demo-header h2{margin:0;color:var(--text-color);}
+        .demo-header p{margin:0;color:var(--text-muted);font-size:14px;}
+        .slider-array{display:flex;gap:10px;padding:10px;overflow-x:auto;}
+        .channel{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;user-select:none;cursor:pointer;}
+        .channel-track{position:relative;width:30px;height:200px;background:var(--border-color);border-radius:5px;}
+        .channel-indicator{position:absolute;bottom:0;width:30px;height:10px;background:var(--primary-color);border-radius:3px;transition:background 0.2s;}
+        .channel-display{margin-top:5px;font-size:14px;color:var(--text-color);}
+        .channel.bool-false{filter:grayscale(1);} .channel.bool-true{filter:grayscale(0);} .channel.bool-false .channel-indicator{background:var(--border-color);} .channel.bool-true .channel-indicator{background:var(--active-color);}
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙</button>
+    <div class="demo-header">
+        <h2>Reactive Binding Demo</h2>
+        <p>Demonstrates two‑way and one‑way binding between slider values and an external state object.</p>
+    </div>
+    <div class="slider-array" id="array-1">
+        <div class="channel" data-channel="0" data-type="int" data-param="cc">
+            <div class="channel-track"><div class="channel-indicator"></div></div>
+            <div class="channel-display">0</div>
+        </div>
+        <div class="channel" data-channel="1" data-type="int" data-param="note">
+            <div class="channel-track"><div class="channel-indicator"></div></div>
+            <div class="channel-display">0</div>
+        </div>
+        <div class="channel" data-channel="2" data-type="int" data-param="bend">
+            <div class="channel-track"><div class="channel-indicator"></div></div>
+            <div class="channel-display">0</div>
+        </div>
+    </div>
+    <div class="state-display" id="state-display"></div>
+
+    <script src="src/main.js"></script>
+    <script>
+        // Instantiate the slider
+        const slider = new MultiTouchSlider();
+        window.slider = slider; // expose globally for debugging
+
+        // Simple reactive state implementation
+        const state = {};
+        const listeners = {};
+        function setState(key, value){
+            state[key] = value;
+            (listeners[key]||[]).forEach(cb=>cb(value));
+            updateStateDisplay();
+        }
+        function onState(key, cb){
+            listeners[key] = listeners[key] || [];
+            listeners[key].push(cb);
+        }
+        function updateStateDisplay(){
+            const div = document.getElementById('state-display');
+            div.innerHTML = '<pre>' + JSON.stringify(state, null, 2) + '</pre>';
+        }
+
+        // Bind sliders to state (two‑way)
+        const binding0 = slider.bind('array-1', 0, () => state.sl0, {
+            onChange(newVal){ setState('sl0', newVal); }
+        });
+        const binding1 = slider.bind('array-1', 1, () => state.sl1, {
+            onChange(newVal){ setState('sl1', newVal); }
+        });
+        const binding2 = slider.bind('array-1', 2, () => state.sl2, {
+            onChange(newVal){ setState('sl2', newVal); }
+        });
+
+        // Two‑way: subscribe to state changes and update slider
+        onState('sl0', val => binding0.update());
+        onState('sl1', val => binding1.update());
+        // Example of one‑way binding: slider changes update state, state changes do NOT update slider
+
+        // Initialize state from current slider positions
+        setState('sl0', binding0.get());
+        setState('sl1', binding1.get());
+        setState('sl2', binding2.get());
+
+        // Theme toggle logic (shared with other demos)
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle){
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            themeToggle.textContent = current === 'light' ? '🌙' : '☀️';
+            themeToggle.addEventListener('click', () => {
+                const cur = document.documentElement.getAttribute('data-theme');
+                const newTheme = cur === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
+            });
+        }
+    </script>
+</body>
+</html>
