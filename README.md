@@ -1,18 +1,28 @@
-# Horizon <br><hr><sub> Universal Multi‑Touch Sliders</sub>
+# horizon <br><hr><sub> Universal Multi‑Touch Sliders</sub>
 
-Horizon is a lightweight, framework‑agnostic JavaScript library that turns any web form into a fully‑interactive, multi‑touch slider surface. The library is built around a minimal _slider‑engine_ that supports four core data types (int, float, iterable, bool), instant visual feedback, and optional persistence via localStorage.
+Horizon is a lightweight, framework‑agnostic Vanllia JavaScript component library that converts input fields into fully‑interactive multi‑touch slider surface. The component is built around a minimal _slider‑engine_ with no dependencies that provides immediate visual feedback. 
 
 [<img src="https://img.shields.io/badge/feed_me-__?logo=kofi&logoColor=white&logoSize=auto&label=donate&labelColor=maroon&color=grey&link=https%3A%2F%2Fko-fi.com%2Fdarkshapes">](https://ko-fi.com/darkshapes)<br>
 
-### Features
+<img width="1678" height="928" alt="image" src="https://github.com/user-attachments/assets/2fee4485-458b-4af1-a69c-568b2fea76d8" />
 
-- **Multi‑touch** – Touch any number of sliders simultaneously.
-- **Performance‑oriented** – RAF‑based rendering, throttled updates, and debounced persistence.
-- **Reactive bindings** – One‑way or two‑way bindings to external state.
-- **Demo demos** – MIDI output, Web Audio, and state serialization.
-- **No dependencies** – Built with vanilla JS.
+## Technical Details
 
-## Browser Compatibility
+- supports multiple data types
+- RAF‑based rendering
+- throttled updates
+- debounced persistence
+- reactive one‑way or two‑way bindings to external state
+- optional persistence via localStorage.
+- Demo examples MIDI output, Web Audio, and state serialization.
+
+## Requirements
+
+### Hardware
+
+- Touch enabled device capable of running a modern browser
+
+### Software
 
 - Chrome 67+
 - Firefox 68+
@@ -20,7 +30,11 @@ Horizon is a lightweight, framework‑agnostic JavaScript library that turns any
 - Edge 79+
 - Mobile browsers (iOS Safari, Android Chrome) – works with touch and pointer events.
 
-> **Caveat:** Web MIDI is only available in Chrome, Edge, and Opera. Safari and Firefox currently do not support the Web MIDI API.
+> **Caveat:** Web MIDI is only available in Chrome, Edge, and Opera. Safari and Firefox currently do not support Web MIDI API.
+
+### Experience
+
+- Light programming experience recommend.ed. The component is meant to be integrated into other projects.
 
 ## Setup
 
@@ -54,7 +68,7 @@ _Build and serve for production:_
 
 Open these files locally or serve them via `npm run serve`.
 
-> - \\ : Minimal UI that loads the library.
+> - / : Minimal UI that loads the library.
 > - _midi-demo_ : Showcases real‑time MIDI CC, note, and pitchbend.
 > - _audio-demo_ : Demonstrates Web Audio parameter control.
 
@@ -96,3 +110,6 @@ Open these files locally or serve them via `npm run serve`.
 | `Sliders.listPresets()`                                   | List stored presets.                      | `console.log(Sliders.listPresets());`                                                |
 | `Sliders.loadPreset(name)`                                | Load a preset.                            | `Sliders.loadPreset('default');`                                                     |
 | `Sliders.deletePreset(name)`                              | Delete preset.                            | `Sliders.deletePreset('default');`                                                   |
+
+
+
